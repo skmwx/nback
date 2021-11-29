@@ -1,0 +1,128 @@
+<html>
+<head>
+<link rel="stylesheet" href="nbackstyle.css"> 
+
+<script>
+  var TIMEOUT = 3000;
+  var old = new Array();
+  var N=2;
+  var cCorrect=0;
+  var cFail=0;
+  var cFalse=0;
+  var bReacted;
+
+
+  function init() {
+    for(var i=0; i<=N; i++) {
+      old[i] = -1;
+    }
+    cCorrect = 0;
+    cFail = 0;
+    cFalse = 0;
+    bReacted = false;
+
+    confirm("Ready? Click to start");
+  }
+
+  function generateNumber(from, to) {
+    var range = (to-from+1);
+    var rnd = Math.random()*range;
+    var res = Math.floor(rnd)+from;
+    if (res>to) res=to;
+    return res;
+  }
+
+  function propagate(number) {
+    for(var i=0; i<N; i++) {
+      old[i] = old[i+1];
+    }
+    old[N] = number;
+  } 
+
+  function updateNumber() {
+    if(!bReacted) {
+      if (old[0] == old[N]) {
+        handleFail();
+      } else showFeedback("x");
+    }
+
+    var number = generateNumber(0,9);
+    propagate(number);
+    var mainDiv = document.getElementById( "divMain" );
+    var s = "<p class='main'>"
+    s += number;
+    s += "</p>";
+    mainDiv.innerHTML = s;
+
+    displayDebug1();
+    bReacted = false;
+  }
+
+  function displayDebug1() {
+    var p = document.getElementById( "pDebug" );
+    p.style = "display:block";
+    var s="";
+    for(var i=0; i<=N; i++) {
+      s += " [" + i + "]=";
+      s += old[i];
+    }
+    p.innerHTML = s;
+  }
+
+  function nextNumber() {
+    updateNumber();
+    setTimeout(nextNumber, TIMEOUT);
+  }
+
+  function main() {
+    init();
+    nextNumber();
+  }
+
+  function handleCorrect() {
+    cCorrect++;
+    showFeedback("Correct");
+  }
+
+  function handleFail() {
+    cFail++;
+    var s = "Fail, " + old[0] + "";
+    for (var i = 1; i<=N; i++) {
+      s += "-";
+      if (i == (N-1)) s += "";
+      s += old[i];
+      if (i == (N-1)) s += "";
+    }
+
+    s += "; click to continue."
+    
+    confirm(s);
+  }
+
+  function handleFalse() {
+    cFalse++;
+    showFeedback("False");
+  }
+
+  function registerClick() {
+    if (old[0] == old[N]) handleCorrect();
+    if (old[0] != old[N]) handleFalse();
+  }
+
+  function showFeedback(str) {
+    var feedbackDiv = document.getElementById( "divFeedback" );
+    var ds = "<p class='feedback'>";
+    ds += "" + str;
+    ds += "</p>";
+    feedbackDiv.innerHTML = ds;
+  }
+</script>
+</head>
+
+<body onload="return main();" onclick="registerClick()">
+<div class="feedback" id="divFeedback"><p class="feedback"></p></div>
+<hr>
+<div class="main" id="divMain"><p class="main">100</p></div>
+<p id="pDebug" style="display:none">100</p>
+</body>
+</html>

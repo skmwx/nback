@@ -1,0 +1,43 @@
+p.main {
+  color:blue;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 100px;
+  text-align: center;
+}
+
+p.feedback {
+  color:black;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 30px;
+  text-align: center;
+}
+
+/*div.main {
+
+  width: 500px;
+  height: 500px;
+
+  text-align: center;
+  border: 3px solid #73AD21;
+  background-color: lightgrey;
+  vertical-align:middle;
+  display:table-cell;
+} */
+
+div.main {
+  height: 500px;
+  width: 500px;
+  border: 3px solid #73AD21;
+  background-color: lightgrey;
+  display: table-cell;
+  vertical-align: middle;
+}
+
+div.feedback {
+  height: 100px;
+  width: 500px;
+  background-color: lightgrey;
+  border: 3px solid #73AD21;
+  display: table-cell;
+  vertical-align: middle;
+}

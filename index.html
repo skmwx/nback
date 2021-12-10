@@ -10,6 +10,14 @@
   var cFail=0;
   var cFalse=0;
   var bReacted;
+  var bInit = false;
+  var sNextFail = null;
+  var desiredRatio = 0.3;
+  var maxRatio = 0.6;
+  var totalNumbers = 0;
+  var totalTrials = 0;
+  var counterTotal = 0;
+  
 
 
   function init() {
@@ -21,7 +29,7 @@
     cFalse = 0;
     bReacted = false;
 
-    confirm("Ready? Click to start");
+    //confirm("Ready? Click to start");
   }
 
   function generateNumber(from, to) {
@@ -29,6 +37,13 @@
     var rnd = Math.random()*range;
     var res = Math.floor(rnd)+from;
     if (res>to) res=to;
+
+    if (old[0]>=0) {
+      if (Math.random()<desiredRatio) {
+        res = old[1];
+      }
+    }
+
     return res;
   }
 
@@ -40,14 +55,30 @@
   } 
 
   function updateNumber() {
-    if(!bReacted) {
-      if (old[0] == old[N]) {
-        handleFail();
-      } else showFeedback("x");
+    totalNumbers++;
+
+    if ( (old[0] == old[N]) && (old[0]>=0) ) {
+       totalTrials++;
+       if(!bReacted) {
+          handleFail();
+      }
     }
+
 
     var number = generateNumber(0,9);
     propagate(number);
+
+    if (sNextFail!=null) {
+      showFeedback( sNextFail, "ffail" );
+      sNextFail = null;
+      totalCount++;
+    } else if (old[0]==-1) {
+      showFeedback("Wait for the first numbers...", "fnormal");
+    } else {
+      showFeedback("Go on... ", "fnormal");
+      totalCount++;
+    }
+
     var mainDiv = document.getElementById( "divMain" );
     var s = "<p class='main'>"
     s += number;
@@ -62,31 +93,44 @@
     var p = document.getElementById( "pDebug" );
     p.style = "display:block";
     var s="";
-    for(var i=0; i<=N; i++) {
+    for(var i=0; i<=N; ++i) {
       s += " [" + i + "]=";
       s += old[i];
     }
+    s += "; " + totalTrials + "/" + totalNumbers + ";";
     p.innerHTML = s;
   }
 
   function nextNumber() {
     updateNumber();
-    setTimeout(nextNumber, TIMEOUT);
+    if (bInit) {
+      setTimeout(nextNumber, TIMEOUT);
+    }
   }
 
   function main() {
+    TIMEOUT = document.getElementById( "textTimeout" ).value;
+    document.getElementById( "divGame" ).className = "shownScreen";
+    document.getElementById( "divSetup" ).className = "hiddenScreen";
     init();
+    document.body.onkeyup = registerKey;
+//    document.body.onclick = registerClick;
+    bInit = true;
     nextNumber();
   }
 
   function handleCorrect() {
+    if (bReacted) return;
+    bReacted = true;
     cCorrect++;
-    showFeedback("Correct");
+    showFeedback("Correct", "fcorrect");
   }
 
   function handleFail() {
+    bReacted = true;
     cFail++;
-    var s = "Fail, " + old[0] + "";
+/*
+    var s = "You missed, " + old[0] + "";
     for (var i = 1; i<=N; i++) {
       s += "-";
       if (i == (N-1)) s += "";
@@ -94,23 +138,38 @@
       if (i == (N-1)) s += "";
     }
 
-    s += "; click to continue."
-    
-    confirm(s);
+    s += "; go on.";
+*/
+    var s = "You missed, " + old[0] + "=" + old[0];
+
+    sNextFail = s;
   }
 
   function handleFalse() {
+    if (bReacted) return;
+    bReacted = true;
     cFalse++;
-    showFeedback("False");
+    showFeedback("False alarm", "ffalse");
   }
 
   function registerClick() {
+    if (old[0] == -1) {
+      alert(1);
+      return;
+    }
     if (old[0] == old[N]) handleCorrect();
     if (old[0] != old[N]) handleFalse();
   }
 
-  function showFeedback(str) {
+  function registerKey(e) {
+    if (e.keyCode === 32 || e.key === ' ') {
+      registerClick();
+    }
+  }
+
+  function showFeedback(str, cls) {
     var feedbackDiv = document.getElementById( "divFeedback" );
+    divFeedback.className = "feedback " + cls;
     var ds = "<p class='feedback'>";
     ds += "" + str;
     ds += "</p>";
@@ -119,10 +178,22 @@
 </script>
 </head>
 
-<body onload="return main();" onclick="registerClick()">
+<body>
+<div id="divGame" class="hiddenScreen">
 <div class="feedback" id="divFeedback"><p class="feedback"></p></div>
 <hr>
-<div class="main" id="divMain"><p class="main">100</p></div>
+<div class="main" id="divMain"><p class="main">...</p></div>
 <p id="pDebug" style="display:none">100</p>
+</div>
+
+<div id="divSetup" class="shownScreen">
+  <div class="setup" id="divSetup">
+    <p>Time between samples, ms: <input type="text" id="textTimeout" value="3000" /> </p>
+    <p>N for n-back task: <input type="text" id="textN" value="2" /> </p>
+    <p>Target ratio for matching samples, 0-1: <input type="text" id="textRation" value="0.3" /></p>
+    <p>Total number of samples: <input type="text" id="textSamples" value="30" /></p>
+    <p><input type="button" value="Start" onclick="return main();"/></p>
+  </div>
+</div>
 </body>
 </html>

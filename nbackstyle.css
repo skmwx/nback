@@ -1,4 +1,11 @@
-p.main {
+p.main1 {
+  color:blue;
+  font-family: "Times New Roman", Times, serif;
+  font-size: 100px;
+  text-align: center;
+}
+
+p.main2 {
   color:blue;
   font-family: "Times New Roman", Times, serif;
   font-size: 100px;
@@ -36,8 +43,34 @@ div.main {
 div.feedback {
   height: 100px;
   width: 500px;
-  background-color: lightgrey;
-  border: 3px solid #73AD21;
   display: table-cell;
   vertical-align: middle;
+}
+
+div.fnormal {
+  background-color: lightgrey;
+  border: 3px solid #FFFFFF;
+}
+
+div.fcorrect {
+  background-color: lightgreen;
+  border: 3px solid #FFFFFF;
+}
+
+div.ffalse {
+  background-color: lightcoral;
+  border: 3px solid #FFFFFF;
+}
+
+div.ffail {
+  background-color: lightcoral;
+  border: 3px solid #FFFFFF;
+}
+
+div.shownScreen {
+  display:block;
+}
+
+div.hiddenScreen {
+  display:none;
 }

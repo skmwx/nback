@@ -1,199 +1,104 @@
 <html>
 <head>
-<link rel="stylesheet" href="nbackstyle.css"> 
-
 <script>
-  var TIMEOUT = 3000;
-  var old = new Array();
-  var N=2;
-  var cCorrect=0;
-  var cFail=0;
-  var cFalse=0;
-  var bReacted;
-  var bInit = false;
-  var sNextFail = null;
-  var desiredRatio = 0.3;
-  var maxRatio = 0.6;
-  var totalNumbers = 0;
-  var totalTrials = 0;
-  var counterTotal = 0;
+var number11 = 0;
+var number12 = 0;
+var number21 = 0;
+var number22 = 0;
+var number31 = 0;
+var number32 = 0;
+var millis = 0;
+
+function getNumber() {
+  return 100+Math.round( Math.random()*900 );
+}
+
+function genNumber() {
+  var n = getNumber();
+
+  while ( 
+          (n<300) || 
+          ((Math.round(n/100)*100) == n ) ||
+          ((Math.round(n/100)*100) == n+1 ) ||
+          ((Math.round(n/100)*100) == n-1 )
+        )
+  {
+    n = getNumber();
+  }
   
+  return n;
+}
+
+function generate() {
+  var s1 = document.getElementById( "span1" );
+  var s2 = document.getElementById( "span2" );
+  var s3 = document.getElementById( "span3" );
+
+  number11 = genNumber();
+  number12 = genNumber();
+  number21 = genNumber();
+  number22 = genNumber();
+  number31 = genNumber();
+  number32 = genNumber();
+
+  s1.innerHTML = " " + number11 + " * " + number12 + " = "
+  s2.innerHTML = " " + number21 + " * " + number22 + " = "
+  s3.innerHTML = " " + number31 + " * " + number32 + " = "
+  millis = Date.now();
+}
+
+function zevaluate() {
+  var s1 = document.getElementById( "ev1" );
+  var s2 = document.getElementById( "ev2" );
+  var s3 = document.getElementById( "ev3" );
+
+  var n1 = document.getElementById( "n1" ).value;
+  var n2 = document.getElementById( "n2" ).value;
+  var n3 = document.getElementById( "n3" ).value;
+
+  var res1 = (n1 == (number11*number12));
+  var res2 = (n2 == (number21*number22));
+  var res3 = (n3 == (number31*number32));
+
+  var rs1 = "" + (res1 ? "V" : "X");
+  var rs2 = "" + (res2 ? "V" : "X");
+  var rs3 = "" + (res3 ? "V" : "X");
+
+  s1.innerHTML = rs1;
+  s2.innerHTML = rs2;
+  s3.innerHTML = rs3;
+
+  var sm = Math.round( (Date.now() - millis) / 1000 );
+  document.getElementById( "sMillis" ).innerHTML = "" + sm;
+}
 
 
-  function init() {
-    for(var i=0; i<=N; i++) {
-      old[i] = -1;
-    }
-    cCorrect = 0;
-    cFail = 0;
-    cFalse = 0;
-    bReacted = false;
-
-    //confirm("Ready? Click to start");
-  }
-
-  function generateNumber(from, to) {
-    var range = (to-from+1);
-    var rnd = Math.random()*range;
-    var res = Math.floor(rnd)+from;
-    if (res>to) res=to;
-
-    if (old[0]>=0) {
-      if (Math.random()<desiredRatio) {
-        res = old[1];
-      }
-    }
-
-    return res;
-  }
-
-  function propagate(number) {
-    for(var i=0; i<N; i++) {
-      old[i] = old[i+1];
-    }
-    old[N] = number;
-  } 
-
-  function updateNumber() {
-    totalNumbers++;
-
-    if ( (old[0] == old[N]) && (old[0]>=0) ) {
-       totalTrials++;
-       if(!bReacted) {
-          handleFail();
-      }
-    }
-
-
-    var number = generateNumber(0,9);
-    propagate(number);
-
-    if (sNextFail!=null) {
-      showFeedback( sNextFail, "ffail" );
-      sNextFail = null;
-      totalCount++;
-    } else if (old[0]==-1) {
-      showFeedback("Wait for the first numbers...", "fnormal");
-    } else {
-      showFeedback("Go on... ", "fnormal");
-      totalCount++;
-    }
-
-    var mainDiv = document.getElementById( "divMain" );
-    var s = "<p class='main'>"
-    s += number;
-    s += "</p>";
-    mainDiv.innerHTML = s;
-
-    displayDebug1();
-    bReacted = false;
-  }
-
-  function displayDebug1() {
-    var p = document.getElementById( "pDebug" );
-    p.style = "display:block";
-    var s="";
-    for(var i=0; i<=N; ++i) {
-      s += " [" + i + "]=";
-      s += old[i];
-    }
-    s += "; " + totalTrials + "/" + totalNumbers + ";";
-    p.innerHTML = s;
-  }
-
-  function nextNumber() {
-    updateNumber();
-    if (bInit) {
-      setTimeout(nextNumber, TIMEOUT);
-    }
-  }
-
-  function main() {
-    TIMEOUT = document.getElementById( "textTimeout" ).value;
-    document.getElementById( "divGame" ).className = "shownScreen";
-    document.getElementById( "divSetup" ).className = "hiddenScreen";
-    init();
-    document.body.onkeyup = registerKey;
-//    document.body.onclick = registerClick;
-    bInit = true;
-    nextNumber();
-  }
-
-  function handleCorrect() {
-    if (bReacted) return;
-    bReacted = true;
-    cCorrect++;
-    showFeedback("Correct", "fcorrect");
-  }
-
-  function handleFail() {
-    bReacted = true;
-    cFail++;
-/*
-    var s = "You missed, " + old[0] + "";
-    for (var i = 1; i<=N; i++) {
-      s += "-";
-      if (i == (N-1)) s += "";
-      s += old[i];
-      if (i == (N-1)) s += "";
-    }
-
-    s += "; go on.";
-*/
-    var s = "You missed, " + old[0] + "=" + old[0];
-
-    sNextFail = s;
-  }
-
-  function handleFalse() {
-    if (bReacted) return;
-    bReacted = true;
-    cFalse++;
-    showFeedback("False alarm", "ffalse");
-  }
-
-  function registerClick() {
-    if (old[0] == -1) {
-      alert(1);
-      return;
-    }
-    if (old[0] == old[N]) handleCorrect();
-    if (old[0] != old[N]) handleFalse();
-  }
-
-  function registerKey(e) {
-    if (e.keyCode === 32 || e.key === ' ') {
-      registerClick();
-    }
-  }
-
-  function showFeedback(str, cls) {
-    var feedbackDiv = document.getElementById( "divFeedback" );
-    divFeedback.className = "feedback " + cls;
-    var ds = "<p class='feedback'>";
-    ds += "" + str;
-    ds += "</p>";
-    feedbackDiv.innerHTML = ds;
-  }
 </script>
 </head>
 
 <body>
-<div id="divGame" class="hiddenScreen">
-<div class="feedback" id="divFeedback"><p class="feedback"></p></div>
-<hr>
-<div class="main" id="divMain"><p class="main">...</p></div>
-<p id="pDebug" style="display:none">100</p>
-</div>
-
-<div id="divSetup" class="shownScreen">
-  <div class="setup" id="divSetup">
-    <p>Time between samples, ms: <input type="text" id="textTimeout" value="3000" /> </p>
-    <p>N for n-back task: <input type="text" id="textN" value="2" /> </p>
-    <p>Target ratio for matching samples, 0-1: <input type="text" id="textRation" value="0.3" /></p>
-    <p>Total number of samples: <input type="text" id="textSamples" value="30" /></p>
-    <p><input type="button" value="Start" onclick="return main();"/></p>
-  </div>
+<input type="button" value="Generate" onclick="return generate();">
+<br>
+<br>
+<br>
+<div id="divHidden">
+  <span id="span1"></span>
+  <input type="number" id="n1" value="">
+  <span id="ev1"></span>
+  <br>
+  <span id="span2"></span>
+  <input type="number" id="n2" value="">
+  <span id="ev2"></span>
+  <br>
+  <span id="span3"></span>
+  <input type="number" id="n3" value="">
+  <span id="ev3"></span>
+  </br>
+  <br>
+  <input type="button" value="submit" onclick="return zevaluate();">
+  <br>
+  <br>
+  Solved in <span id="sMillis"></span>
 </div>
 </body>
 </html>

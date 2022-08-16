@@ -8,97 +8,119 @@ var number22 = 0;
 var number31 = 0;
 var number32 = 0;
 var millis = 0;
+var success = 0;
+var currentAttempt = 0;
+var savedAttempts = new Array();
+const MAX_SUCCESS = 4;
 
-function getNumber() {
-  return 100+Math.round( Math.random()*900 );
+function getNumber100() {
+  var digit1 = 3+Math.floor( Math.random()*7 );
+  var digit2 = 2+Math.floor( Math.random()*8 );
+  var digit3 = 2+Math.floor( Math.random()*7 );
+
+  return digit1*100+digit2*10+digit3;
 }
 
-function genNumber() {
-  var n = getNumber();
+function getNumber10() {
+  var digit1 = 3+Math.floor( Math.random()*7 );
+  var digit2 = 2+Math.floor( Math.random()*7 );
 
-  while ( 
-          (n<300) || 
-          ((Math.round(n/100)*100) == n ) ||
-          ((Math.round(n/100)*100) == n+1 ) ||
-          ((Math.round(n/100)*100) == n-1 )
-        )
-  {
-    n = getNumber();
-  }
-  
-  return n;
+  return digit1*10+digit2;
 }
 
 function generate() {
-  var s1 = document.getElementById( "span1" );
-  var s2 = document.getElementById( "span2" );
-  var s3 = document.getElementById( "span3" );
+  var s1 = document.getElementById( "spanNumber" );
 
-  number11 = genNumber();
-  number12 = genNumber();
-  number21 = genNumber();
-  number22 = genNumber();
-  number31 = genNumber();
-  number32 = genNumber();
+  number11 = getNumber100();
+  number12 = getNumber10();
 
   s1.innerHTML = " " + number11 + " * " + number12 + " = "
-  s2.innerHTML = " " + number21 + " * " + number22 + " = "
-  s3.innerHTML = " " + number31 + " * " + number32 + " = "
-  millis = Date.now();
+  savedAttempts[currentAttempt] = new Array();
+  savedAttempts[currentAttempt][0] = number11;
+  savedAttempts[currentAttempt][1] = number12;
+
+  document.getElementById( "n" ).value = 0;
+}
+
+function updateSuccess() {
+  var s1 = document.getElementById( "spanSuccess" );
+  s1.innerHTML = "Successful attempts: " + success + "/" + MAX_SUCCESS;
+}
+
+function updateAttempts() {
+  var s1 = document.getElementById( "spanAttempts" );
+  var ih = "";
+  for (var i = 0; i < currentAttempt; i++) {
+    ih += (i+1);
+    ih += ". ";
+    var n1 = savedAttempts[i][0];
+    var n2 = savedAttempts[i][1];
+    var n3 = savedAttempts[i][2];
+    ih +=  n1 + " * " + n2 + " = " + n1*n2;
+    ih += ( (n1*n2 == n3) ? " - Correct" : ", not " + n3 + " - Incorrect" );
+    ih += "<br>\n";
+  }
+  s1.innerHTML = ih;
 }
 
 function zevaluate() {
-  var s1 = document.getElementById( "ev1" );
-  var s2 = document.getElementById( "ev2" );
-  var s3 = document.getElementById( "ev3" );
+  var s1 = document.getElementById( "spanSuccess" );
 
-  var n1 = document.getElementById( "n1" ).value;
-  var n2 = document.getElementById( "n2" ).value;
-  var n3 = document.getElementById( "n3" ).value;
+  var n = document.getElementById( "n" ).value;
+  savedAttempts[currentAttempt][2] = n;
 
-  var res1 = (n1 == (number11*number12));
-  var res2 = (n2 == (number21*number22));
-  var res3 = (n3 == (number31*number32));
+  currentAttempt++;
+  updateAttempts();
 
-  var rs1 = "" + (res1 ? "V" : "X");
-  var rs2 = "" + (res2 ? "V" : "X");
-  var rs3 = "" + (res3 ? "V" : "X");
+  if (n == number11*number12) {
+    success++;
+  }
 
-  s1.innerHTML = rs1;
-  s2.innerHTML = rs2;
-  s3.innerHTML = rs3;
+  if (success >= MAX_SUCCESS) {
+    var sm = Math.round( (Date.now() - millis) / 1000 );
 
-  var sm = Math.round( (Date.now() - millis) / 1000 );
-  document.getElementById( "sMillis" ).innerHTML = "" + sm;
+    var spanRes = document.getElementById( "spanResult" );
+    spanRes.innerHTML = "" + MAX_SUCCESS + " problems solved";
+    spanRes.innerHTML += " in " + sm + " seconds, " + currentAttempt + " attempts";
+  } else {
+    generate();
+  }
 }
 
+function start() {
+  millis = Date.now();
+  success = 0;
+  currentAttempt = 0;
+  generate();
+  document.getElementById( "n" ).value = 0;
+  document.getElementById( "spanResult" ).innerHTML = "";
+}
 
 </script>
 </head>
 
 <body>
-<input type="button" value="Generate" onclick="return generate();">
+<br>
+<br>
+<input type="button" value="(re)Start" onclick="start()" />
+<br>
+<br>
+<span id="spanSuccess">Successful results: 0/3</span>
+
 <br>
 <br>
 <br>
-<div id="divHidden">
-  <span id="span1"></span>
-  <input type="number" id="n1" value="">
-  <span id="ev1"></span>
-  <br>
-  <span id="span2"></span>
-  <input type="number" id="n2" value="">
-  <span id="ev2"></span>
-  <br>
-  <span id="span3"></span>
-  <input type="number" id="n3" value="">
-  <span id="ev3"></span>
-  </br>
-  <br>
-  <input type="button" value="submit" onclick="return zevaluate();">
-  <br>
-  <br>
-  Solved in <span id="sMillis"></span>
-</div>
+
+<span id="spanAttempts">...</span>
+
+<br>
+
+<span id="spanNumber"></span><input type="number" id="n" value="">
+
+<br>
+<br>
+
+<input type="button" value="submit" onclick="return zevaluate();"><br>
+<span id="spanResult"></span>
 </body>
 </html>

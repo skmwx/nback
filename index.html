@@ -94,6 +94,7 @@ function start() {
   generate();
   document.getElementById( "n" ).value = 0;
   document.getElementById( "spanResult" ).innerHTML = "";
+  document.getElementById( "spanAttempts" ).innerHTML = "...";
 }
 
 </script>
@@ -105,7 +106,7 @@ function start() {
 <input type="button" value="(re)Start" onclick="start()" />
 <br>
 <br>
-<span id="spanSuccess">Successful results: 0/3</span>
+<span id="spanSuccess">Successful results: 0/4</span>
 
 <br>
 <br>
